@@ -1,0 +1,10 @@
+.cell:hover {
+  stroke: black;
+  stroke-width: 1px;
+}
+
+#tooltip {
+  position: absolute;
+  background-color: aliceblue;
+  padding: 5px;
+}
