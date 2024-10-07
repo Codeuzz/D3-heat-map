@@ -6,7 +6,6 @@ document.querySelector('#app').innerHTML += `
 <h3 id='description'>1753 - 2015: base temperature 8.66℃</h3>
 <div id="container"></div>
 <div id="tooltip"></div>
-<div id="legend"></div>
 `
 
 fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/master/global-temperature.json')
@@ -21,7 +20,6 @@ fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/maste
   makeSvg();
   makeAxis(data)
   makeRect(data);
-  console.log(data)
 })
 .catch(error => {
   console.error('Error fetching the dataa', error);
@@ -29,9 +27,26 @@ fetch('https://raw.githubusercontent.com/freeCodeCamp/ProjectReferenceData/maste
 
 const height = 480;
 const width = 1400;
-const padding = 50;
+const padding = 60;
 let scaleX
 let scaleY
+const monthNames = [
+  "January", "February", "March", "April", "May", "June", 
+  "July", "August", "September", "October", "November", "December"
+];
+const colors = [
+  'darkred',    // hottest
+  'red',        // very hot
+  'orangered',  // hot
+  'orange',     // warm
+  'gold',       // mild warm
+  'yellow',     // mild cool
+  'lightblue',  // cool
+  'blue',       // cold
+  'darkblue'    // coldest
+];
+
+
 
 const makeSvg = () => {
   d3.select('#container')
@@ -60,15 +75,27 @@ const makeAxis = data => {
     .call(axisX)
 
 
-  const months = data.monthlyVariance.map(d => d.month)
+  const months = data.monthlyVariance.map(d => d.month - 1)
   const monthDates = months.map(m => new Date(2023, m - 1));
+  console.log(d3.min(months))
 
-  scaleY = d3.scaleTime()
-    .domain([new Date(d3.max(months) + 1), new Date(d3.min(months) - 1)])
+  const formatMonth = d3.timeFormat("%B");
+  
+  scaleY = d3.scaleBand()
+    .domain([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].reverse())
     .range([height - padding, padding])
 
+    console.log(scaleY.domain())
+
   const axisY = d3.axisLeft(scaleY)
-    .tickFormat(d => d.toLocaleString('default', { month: 'long' }));
+    .scale(scaleY)
+    .tickValues(scaleY.domain())
+    .tickFormat(function (month) {
+      let date = new Date(0);
+      date.setUTCMonth(month);
+      let format = d3.utcFormat('%B');
+      return format(date);
+    })
 
   svg.append('g')
   .attr("transform", `translate(${padding}, 0)`)
@@ -89,7 +116,7 @@ const makeRect = data => {
   .attr('height', ((height - padding) / 14) )
   .attr('width', (width - padding) / maxValuesForYear.length)
   .attr('x', (d, i) => scaleX(d.year))
-  .attr('y', (d, i) => scaleY(d.month - 0.5))
+  .attr('y', (d, i) => scaleY(d.month - 1) )
   .attr('class', 'cell')
   .attr('data-month', d => d.month - 1)
   .attr('data-year', d => d.year)
@@ -116,17 +143,35 @@ const makeRect = data => {
     }
 })
   .on('mouseover', (event, d) => {
+    const currTemp = baseTemp + d.variance
+    const variance = d.variance.toFixed(1)
+    const toMonthName = (number) => monthNames[number - 1]
+
+
     tooltip.style('opacity', '1')
     .attr('data-year', d.year)
-    .html(`${d.variance}`)
-    .style('top', `${event.pageY + 10}px`)
-    .style('left', `${event.pageX + 20}px`)
+    .html(`
+      ${d.year} - ${toMonthName(d.month)} <br>
+      ${currTemp.toFixed(1) + '℃'} <br>
+      ${variance > 0 ? '+' + variance + '℃' : variance + '℃'}`)
+    .style('top', `${event.pageY + 15}px`)
+    .style('left', `${event.pageX + 15}px`)
   })
   .on('mouseout', () => {
     tooltip.style('opacity', '0')
   })
 
-  d3.select('#legend')
-  .html(`I am Legend`)
+  svg.append('g')
+  .attr('id', 'legend')
+  .attr('y', 400)
+  .selectAll('rect')
+  .data(colors)
+  .enter()
+  .append('rect')
+  .attr('width', 25)
+  .attr('height', 25)
+  .attr('x', (d,i) => i * 25)
+  .attr('y', (d,i) => height)
+  .style('fill', d => d)
 
 }

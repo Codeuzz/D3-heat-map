@@ -1,3 +1,7 @@
+body {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
 .cell:hover {
   stroke: black;
   stroke-width: 1px;
@@ -5,6 +9,19 @@
 
 #tooltip {
   position: absolute;
-  background-color: aliceblue;
-  padding: 5px;
+  background-color: rgba(0, 0, 0, 0.726);
+  padding: 10px;
+  box-sizing: border-box;
+  border-radius: 5px;
+  color: white;
+}
+
+#title, #description, #tooltip{
+  text-align: center;
+}
+
+#legend {
+  border: 1px solid blue;
+  width: 200px;
+  height: 200px;
 }
