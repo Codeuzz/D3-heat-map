@@ -2,8 +2,10 @@ import './style.css'
 import * as d3 from "d3";
 
 document.querySelector('#app').innerHTML += `
-<h1 id="title">Monthly Global Land-Surface Temperature</h1>
-<h3 id='description'>1753 - 2015: base temperature 8.66℃</h3>
+<div id='title-div'>
+  <h1 id="title">Monthly Global Land-Surface Temperature</h1>
+  <h3 id='description'>1753 - 2015: base temperature 8.66℃</h3>
+</div>
 <div id="container"></div>
 <div id="tooltip"></div>
 `
@@ -53,7 +55,6 @@ const makeSvg = () => {
   .append('svg')
   .attr('height', height + padding)
   .attr('width', width )
-  .style('border', '1px solid red')
 }
 
 const makeAxis = data => {
@@ -114,7 +115,7 @@ const makeRect = data => {
   .enter()
   .append('rect')
   .attr('height', ((height - padding) / 14) )
-  .attr('width', (width - padding) / maxValuesForYear.length)
+  .attr('width', (width - padding - 90) / maxValuesForYear.length)
   .attr('x', (d, i) => scaleX(d.year))
   .attr('y', (d, i) => scaleY(d.month - 1) )
   .attr('class', 'cell')
@@ -122,25 +123,27 @@ const makeRect = data => {
   .attr('data-year', d => d.year)
   .attr('data-temp', d => baseTemp + (d.variance))
   .attr('fill', d => {
-    if (d.variance > 4) {
-        return 'darkred';     // hottest
-    } else if (d.variance > 3) {
-        return 'red';         // very hot
-    } else if (d.variance > 2) {
-        return 'orangered';   // hot
-    } else if (d.variance > 1) {
-        return 'orange';      // warm
-    } else if (d.variance > 0) {
-        return 'gold';        // mild warm
-    } else if (d.variance > -1) {
-        return 'yellow';      // mild cool
-    } else if (d.variance > -3) {
-        return 'lightblue';   // cool
-    } else if (d.variance > -5) {
-        return 'blue';        // cold
-    } else {
-        return 'darkblue';    // coldest
-    }
+    if (d.variance + baseTemp > 12.8) {
+      return 'darkred';
+  } else if (d.variance + baseTemp > 11.7) {
+      return 'red';
+  } else if (d.variance + baseTemp > 10.6) {
+      return 'orangered';
+  } else if (d.variance + baseTemp > 9.5) {
+      return 'orange';
+  } else if (d.variance + baseTemp > 8.3) {
+      return 'gold';
+  } else if (d.variance + baseTemp > 7.2) {
+      return 'yellow';
+  } else if (d.variance + baseTemp > 6.1) {
+      return 'lightblue';
+  } else if (d.variance + baseTemp > 5.0) {
+      return 'blue';
+  } else if (d.variance + baseTemp > 3.9) {
+      return 'darkblue';
+  } else {
+      return 'darkblue'; // Default for values <= 2.8
+  }
 })
   .on('mouseover', (event, d) => {
     const currTemp = baseTemp + d.variance
@@ -161,6 +164,22 @@ const makeRect = data => {
     tooltip.style('opacity', '0')
   })
 
+  let squareWidth = 25;
+  let legendX = d3.scaleLinear()
+    .domain([2.8, 12.8])
+    .range([0, 25 * 9]);
+
+    const tickValues = [2.8, 3.9, 5.0, 6.1, 7.2, 8.3, 9.5, 10.6, 11.7, 12.8];
+  const legendAxis = d3.axisBottom(legendX)
+    .tickValues(tickValues)
+    .tickFormat(d3.format(".1f"));
+
+  d3.select("svg")
+  .append('g')
+  .attr("transform", `translate(20, ${height + 25})`)
+  .call(legendAxis)
+  
+
   svg.append('g')
   .attr('id', 'legend')
   .attr('y', 400)
@@ -168,10 +187,13 @@ const makeRect = data => {
   .data(colors)
   .enter()
   .append('rect')
-  .attr('width', 25)
+  .attr('width', (25 * 9) / 9)
   .attr('height', 25)
-  .attr('x', (d,i) => i * 25)
-  .attr('y', (d,i) => height)
+  .attr('x', (d,i) => i  * 25 + 20)
+  .attr('y', height)
   .style('fill', d => d)
+
+
+  
 
 }

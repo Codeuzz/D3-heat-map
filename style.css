@@ -1,5 +1,6 @@
 body {
   font-family: Arial, Helvetica, sans-serif;
+  background-color: rgb(225, 212, 255);
 }
 
 .cell:hover {
@@ -20,8 +21,14 @@ body {
   text-align: center;
 }
 
-#legend {
-  border: 1px solid blue;
-  width: 200px;
-  height: 200px;
+#container {
+  width: 1400px;
+  padding: 0;
+  margin-top: 70px;
+}
+
+#title-div {
+  position: absolute;
+  top: 0;
+  left: 390px
 }
