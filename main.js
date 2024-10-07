@@ -184,7 +184,7 @@ const makeRect = data => {
   .attr('id', 'legend')
   .attr('y', 400)
   .selectAll('rect')
-  .data(colors)
+  .data(colors.reverse())
   .enter()
   .append('rect')
   .attr('width', (25 * 9) / 9)
